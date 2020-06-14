@@ -1,0 +1,12 @@
+POST http://localhost:4000/api/user
+Content-Type: application/json
+
+{
+    "email": "dnq21321ds3w31rxt2@gmail.com",
+    "password": "secret",
+    "name": "David nuevo"
+}
+
+###
+
+GET http://localhost:4000/api/user
