@@ -8,16 +8,27 @@ const passport = require('passport');
 
 const { database } = require('../lib/keys');
 
+const setUserID = (req, res, next) => {
+    /*
+    if(req.session) {
+        console.log(req.session)
+        const userID = req.session.passport.user;
+        req.locals.userid = userID;
+    }*/
+    next();
+}
+
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors());
 app.use(session({
-    secret: 'syntaxerror',
+    secret: 'ron',
     resave: false,
     saveUninitialized: false,
     store: new MySQLStore(database)
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(setUserID);
 
 module.exports = app;

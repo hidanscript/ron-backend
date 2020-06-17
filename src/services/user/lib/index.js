@@ -25,7 +25,13 @@ const validateUser = (username, password, userData) => {
     );
 }
 
+const getUserById = async userid => {
+    const user = await db.query("SELECT * FROM Rider WHERE RiderID = ?", userid);
+    return user;
+}
+
 module.exports = {
     createUser,
-    validateUser
+    validateUser,
+    getUserById
 }
