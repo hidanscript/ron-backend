@@ -1,5 +1,5 @@
 DROP PROCEDURE IF EXISTS UserTripsInQueue_Cons_sp;
-
+DELIMITER $$
 CREATE PROCEDURE UserTripsInQueue_Cons_sp(IN UserID INT)
 
 BEGIN

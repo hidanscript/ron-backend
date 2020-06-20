@@ -16,7 +16,7 @@ BEGIN
     INSERT INTO 
         Trips
         (
-            RiderID, 
+            UserID, 
             Country, 
             StartLocation, 
             FinalLocation, 

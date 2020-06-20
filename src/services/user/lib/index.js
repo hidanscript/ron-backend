@@ -11,7 +11,7 @@ const createUser = async (username, password, userData) => {
         password: encryptedPassword,
     }
 
-    const result = await db.query("INSERT INTO Rider SET ?", newUser);
+    const result = await db.query("INSERT INTO User SET ?", newUser);
     newUser.id = result.insertId;
     return newUser;
 }
@@ -26,7 +26,7 @@ const validateUser = (username, password, userData) => {
 }
 
 const getUserById = async userid => {
-    const user = await db.query("SELECT * FROM Rider WHERE RiderID = ?", userid);
+    const user = await db.query("SELECT * FROM User WHERE UserID = ?", userid);
     return user;
 }
 

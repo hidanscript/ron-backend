@@ -1,5 +1,3 @@
-USE remises_online;
-
 CREATE TABLE Driver (
     DriverID INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     Name VARCHAR(50) NOT NULL,
