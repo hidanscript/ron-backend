@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const http = require('http');
 
 //Config
 require('dotenv').config();
@@ -13,6 +14,10 @@ app.use(require('./src/middlewares'));
 //Config routes
 app.use('/api', require('./src/routes/api'));
 
-app.listen(app.get('PORT'), () => {
+const server = http.createServer(app);
+const initWebSockets = require('./src/socket-connection');
+initWebSockets(server);
+
+server.listen(app.get('PORT'), () => {
     console.log("Server initialized at port " + app.get('PORT'));
 });

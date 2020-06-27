@@ -37,10 +37,8 @@ const userCanCreateAtrip = async (userid) => {
 };
 
 const validateTripData = (tripData) => {
-  const { startLocation, finalLocation, userid } = tripData;
+  const { userid } = tripData;
   return !!(
-    isString(startLocation) &&
-    isString(finalLocation) &&
     isNumber(userid)
   );
 };

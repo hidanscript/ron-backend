@@ -1,29 +1,25 @@
-const { Router } = require('express');
-const { validateTripData } = require('../../../services/trips/validation');
-const { createTrip } = require('../../../services/trips/lib');
-const { getDistance, calculateTotalCost } = require('../../../lib/functions');
+const { Router } = require("express");
+const { validateTripData } = require("../../../services/trips/validation");
+const { createTrip } = require("../../../services/trips/lib");
+const { getDistance, calculateTotalCost } = require("../../../lib/functions");
+const { auth } = require("../../auth");
 const router = Router();
 
-router.post('/', async (req, res) => {
-    const tripData = { ...req.body };
-    const { startPosition, finalPosition } = req.body;
-    const distance = getDistance(startPosition, finalPosition);
-    const price = calculateTotalCost(distance);
+router.post("/", auth, async (req, res) => {
+  const userid = req.session.passport.user;
+  const tripData = { ...req.body };
+  const { startLocation, finalLocation } = req.body;
+  const distance = getDistance(startLocation, finalLocation);
+  const price = calculateTotalCost(distance);
 
-    if(validateTripData(tripData)) {
-        try {
-            const newTrip = await createTrip(tripData, distance, price);
-            res.status(200);
-            res.json(newTrip);
-        } catch(error) {
-            res.status(500);
-            res.json({ error: true, message: error });
-        }
-    } else {
-        res.status(500);
-        res.json({ error: true , message: 'Data is invalid' });
-    }
-
+  try {
+    const newTrip = await createTrip(userid, tripData, distance, price);
+    res.status(200);
+    res.json(newTrip);
+  } catch (error) {
+    res.status(500);
+    res.json({ error: true, message: error });
+  }
 });
 
 module.exports = router;

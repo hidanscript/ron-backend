@@ -1,6 +1,6 @@
 
-const authUser = (req, res, next) => {
-    if(req.session.passport.user) {
+const auth = (req, res, next) => {
+    if(req.isAuthenticated()) {
         next();
     } else {
         res.status(401);
@@ -9,5 +9,5 @@ const authUser = (req, res, next) => {
 }
 
 module.exports = {
-    authUser
+    auth
 }

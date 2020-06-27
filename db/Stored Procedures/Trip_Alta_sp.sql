@@ -3,8 +3,10 @@ DELIMITER $$
 CREATE PROCEDURE Trip_Alta_sp(
     IN UserID INT, 
     IN TripCountry VARCHAR(50), 
-    IN TripStartLocation VARCHAR(50),
-    IN TripFinalLocation VARCHAR(50),
+    IN TripStartLocationLatitude VARCHAR(50),
+    IN TripStartLocationLongitude VARCHAR(50),
+    IN TripFinalLocationLatitude VARCHAR(50),
+    IN TripFinalLocationLongitude VARCHAR(50),
     IN TripDistanceKM INT,
     IN TripPriceARS DECIMAL(13, 2)
 )
@@ -18,8 +20,10 @@ BEGIN
         (
             UserID, 
             Country, 
-            StartLocation, 
-            FinalLocation, 
+            StartLocationLatitude, 
+            StartLocationLongitude,
+            FinalLocationLatitude, 
+            FinalLocationLongitude, 
             DistanceKM, 
             PriceARS
         )
@@ -27,8 +31,10 @@ BEGIN
         (
             UserID,
             TripCountry,
-            TripStartLocation,
-            TripFinalLocation,
+            TripStartLocationLatitude,
+            TripStartLocationLongitude,
+            TripFinalLocationLatitude,
+            TripFinalLocationLongitude,
             TripDistanceKM,
             TripPriceARS
         );
