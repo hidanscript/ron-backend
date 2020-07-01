@@ -26,12 +26,18 @@ const validateUser = (username, password, userData) => {
 }
 
 const getUserById = async userid => {
-    const user = await db.query("SELECT * FROM User WHERE UserID = ?", userid);
+    const user = await db.query("SELECT Name, Email, Trips FROM User WHERE UserID = ?", userid);
     return user;
+}
+
+const getUserByEmail = async email => {
+    const user = await db.query("SELECT Name, Email, Password, Trips FROM User WHERE Email = ?", email);
+    return user.length ? user[0] : false;
 }
 
 module.exports = {
     createUser,
     validateUser,
-    getUserById
+    getUserById,
+    getUserByEmail
 }

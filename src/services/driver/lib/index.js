@@ -58,10 +58,20 @@ const getDriversWorkingAvailable = async() => {
   }
 }
 
+const getDriverByEmail = async email => {
+  try {
+    const driver = await db.query("SELECT * FROM Driver WHERE DriverID = ?", driverid);
+    return driver.length ? driver[0] : false;
+  } catch {
+    return false;
+  }
+}
+
 module.exports = {
   createDriver,
   validateDriver,
   getDriverById,
   updateDriverPosition,
-  getDriversWorkingAvailable
+  getDriversWorkingAvailable,
+  getDriverByEmail
 };

@@ -15,6 +15,14 @@ function init(server) {
             socket.join('room user ' + userid);
         });
 
+        socket.on("leave driver room", driverid => {
+            socket.leave('room ' + driverid);
+        });
+
+        socket.on("leave user room", userid => {
+            socket.leave('room user ' + userid);
+        });
+
         socket.on("update driver position", async locationData => {
             const { driverid, latitude, longitude } = locationData;
             const newDriverPosition = await updateDriverPosition(driverid, latitude, longitude);

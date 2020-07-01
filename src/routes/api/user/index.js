@@ -6,13 +6,22 @@ const router = Router();
 const passport = require('passport');
 
 router.post('/', passport.authenticate('local-signup'), (req, res) => {
-    res.json({ success: true });
+    console.log(req);
+    res.json({ success: true, userid: req.session.passport.user });
 });
 
 router.get('/', auth, async (req, res) => {
     const user = await getUserById(req.session.passport.user);
-    console.log(user);
-    res.json(user);
+    res.json({...user, userid: req.session.passport.user});
+});
+
+router.post('/login', passport.authenticate('local-login'), (req, res) => {
+    res.json({ success: true , userid: req.session.passport.user });
+});
+
+router.get('/logout', auth, async (req, res) => {
+    req.session.destroy();
+    res.json({ success: true });
 });
 
 module.exports = router;
