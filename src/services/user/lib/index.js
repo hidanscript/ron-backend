@@ -10,10 +10,16 @@ const createUser = async (username, password, userData) => {
         name: userData.name,
         password: encryptedPassword,
     }
-
-    const result = await db.query("INSERT INTO User SET ?", newUser);
-    newUser.id = result.insertId;
-    return newUser;
+    try {
+        const result = await db.query("INSERT INTO User SET ?", newUser);
+        newUser.id = result.insertId;
+        newUser.type = "user";
+        return newUser;
+    } catch(error) {
+        console.log(newUser)
+        return false;
+    }
+    
 }
 
 const validateUser = (username, password, userData) => {
@@ -26,12 +32,12 @@ const validateUser = (username, password, userData) => {
 }
 
 const getUserById = async userid => {
-    const user = await db.query("SELECT Name, Email, Trips FROM User WHERE UserID = ?", userid);
+    const user = await db.query("SELECT UserID, Name, Email, Trips FROM User WHERE UserID = ?", userid);
     return user;
 }
 
 const getUserByEmail = async email => {
-    const user = await db.query("SELECT Name, Email, Password, Trips FROM User WHERE Email = ?", email);
+    const user = await db.query("SELECT UserID, Name, Email, Password, Trips FROM User WHERE Email = ?", email);
     return user.length ? user[0] : false;
 }
 

@@ -24,6 +24,24 @@ passport.use('local-signup', new LocalStrategy({
     }
 }));
 
+passport.use('local-signup-driver', new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password',
+    passReqToCallback: true
+}, async (req, username, password, done) => {
+    const driverData = { ...req.body };
+    if(validateDriver(driverData)) {
+        try {
+            const newDriver = await createDriver(driverData, username, password);
+            return done( null, newDriver );
+        } catch(error) {
+            return done( null, false, { error: true, message: error });
+        }
+    } else {
+        return done( null, false, { error: true, message: "Invalid data provided" });
+    }
+}));
+
 passport.use('local-login', new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password',
@@ -44,25 +62,6 @@ passport.use('local-login', new LocalStrategy({
     }
 }));
 
-passport.use('local-signup-driver', new LocalStrategy({
-    usernameField: 'email',
-    passwordField: 'password',
-    passReqToCallback: true
-}, async (req, username, password, done) => {
-    const driverData = { ...req.body };
-
-    if(validateDriver(driverData)) {
-        try {
-            const newDriver = await createDriver(driverData, username, password);
-            return done( null, newDriver );
-        } catch(error) {
-            return done( null, false, { error: true, message: error });
-        }
-    } else {
-        return done( null, false, { error: true, message: "Invalid data provided" });
-    }
-}));
-
 passport.use('local-login-driver', new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password',
@@ -80,11 +79,13 @@ passport.use('local-login-driver', new LocalStrategy({
     }
 }));
 
-passport.serializeUser((user, done) => {
-    done(null, user.id);
+passport.serializeUser((connection, done) => {
+    done(null, connection.id);
 });
 
 passport.deserializeUser(async (id, done) => {
+    console.log("desirialize")
+    console.log(id)
    const rows = await db.query("SELECT * FROM User WHERE UserID = ?", id);
    done(null, rows[0]);
 })

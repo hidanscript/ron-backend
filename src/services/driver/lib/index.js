@@ -9,23 +9,24 @@ const createDriver = async (driverData, username, password) => {
     email: username,
     name: driverData.name,
     dni: driverData.dni,
-    currentLocation: driverData.currentLocation,
+    currentLocationLatitude: driverData.currentLocationLatitude,
+    currentLocationLongitude: driverData.currentLocationLongitude,
     cellphone: driverData.cellphone,
     password: encryptedPassword,
   };
 
   const result = await db.query("INSERT INTO Driver SET ?", newDriver);
   newDriver.id = result.insertId;
+  newDriver.type = "driver";
   return newDriver;
 };
 
 const validateDriver = (driverData) => {
-  const { name, dni, cellphone, currentLocation } = driverData;
-  return !!(
+  const { name, dni, cellphone } = driverData;
+  return (
     isString(name) &&
     isNumber(dni) &&
-    isString(cellphone) &&
-    isString(currentLocation)
+    isNumber(cellphone)
   );
 };
 
@@ -67,11 +68,31 @@ const getDriverByEmail = async email => {
   }
 }
 
+const getDriverTripInfo = async driverid => {
+  try {
+    const tripÌnfo = await db.query("CALL DriverTripInfo_Cons_sp(?)", driverid);
+    return tripÌnfo.length ? tripInfo[0] : false;
+  } catch {
+    return false;
+  }
+}
+
+const setDriverOnATrip = async (driverid, tripidprovided) => {
+  try {
+    await db.query("CALL SetDriverOnATrip_sp(?, ?)", [driverid, tripidprovided]);
+    return true;
+  } catch(error) {
+    return false;
+  }
+}
+
 module.exports = {
   createDriver,
   validateDriver,
   getDriverById,
   updateDriverPosition,
   getDriversWorkingAvailable,
-  getDriverByEmail
+  getDriverByEmail,
+  getDriverTripInfo,
+  setDriverOnATrip
 };

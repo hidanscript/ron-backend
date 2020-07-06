@@ -6,7 +6,6 @@ const router = Router();
 const passport = require('passport');
 
 router.post('/', passport.authenticate('local-signup'), (req, res) => {
-    console.log(req);
     res.json({ success: true, userid: req.session.passport.user });
 });
 

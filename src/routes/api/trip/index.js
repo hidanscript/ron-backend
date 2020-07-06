@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const { validateTripData } = require("../../../services/trips/validation");
 const { createTrip } = require("../../../services/trips/lib");
-const { getDistance, calculateTotalCost } = require("../../../lib/functions");
+const { getDistance, getDistanceString, calculateTotalCost } = require("../../../lib/functions");
 const { auth } = require("../../auth");
 const router = Router();
 
@@ -15,10 +15,24 @@ router.post("/", auth, async (req, res) => {
   try {
     const newTrip = await createTrip(userid, tripData, distance, price);
     res.status(200);
-    res.json(newTrip);
+    res.json({ trip: newTrip, success: true });
   } catch (error) {
     res.status(500);
-    res.json({ error: true, message: error });
+    res.json({ success: false, error: true, message: error });
+  }
+});
+
+router.post('/data', async(req, res) => {
+  try {
+    const { startLocation, finalLocation } = req.body;
+    const distance = getDistance(startLocation, finalLocation);
+    const distanceString = getDistanceString(startLocation, finalLocation);
+    const price = calculateTotalCost(distance);
+    res.status(200);
+    res.json({ success: true, distance: distanceString, price : `${price} $ARS` });
+  } catch(error) {
+    res.status(500);
+    res.json({ success: false, message: error });
   }
 });
 

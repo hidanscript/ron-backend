@@ -5,7 +5,7 @@ const cors = require('cors');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session');
 const passport = require('passport');
-
+const multer = require('multer');
 const { database } = require('../lib/keys');
 
 const setUserID = (req, res, next) => {

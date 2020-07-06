@@ -7,7 +7,7 @@ BEGIN
     SELECT
 		*
 	FROM
-		Trip as Tr
+		Trips as Tr
         inner join TripsQueue as TrQu on TrQu.TripID = Tr.TripID
 	WHERE
 		Tr.UserID = UserID;
