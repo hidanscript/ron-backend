@@ -54,7 +54,7 @@ const getDriversWorkingAvailable = async() => {
   try {
     const driverList = await db.query("CALL GetWorkingDriversAvailable_sp()");
     return driverList.length ? driverList : false;
-  } catch {
+  } catch (e) { 
     return false;
   }
 }
@@ -63,7 +63,7 @@ const getDriverByEmail = async email => {
   try {
     const driver = await db.query("SELECT * FROM Driver WHERE DriverID = ?", driverid);
     return driver.length ? driver[0] : false;
-  } catch {
+  } catch(error) {
     return false;
   }
 }
@@ -72,7 +72,7 @@ const getDriverTripInfo = async driverid => {
   try {
     const tripÌnfo = await db.query("CALL DriverTripInfo_Cons_sp(?)", driverid);
     return tripÌnfo.length ? tripInfo[0] : false;
-  } catch {
+  } catch(error) {
     return false;
   }
 }
