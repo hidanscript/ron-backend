@@ -86,6 +86,15 @@ const setDriverOnATrip = async (driverid, tripidprovided) => {
   }
 }
 
+const setDriverWorking = async driverid => {
+  try {
+    await db.query("CALL SetDriverWorking_sp(?)", driverid );
+    return true;
+  } catch(error) {
+    return false;
+  }
+}
+
 module.exports = {
   createDriver,
   validateDriver,
@@ -94,5 +103,6 @@ module.exports = {
   getDriversWorkingAvailable,
   getDriverByEmail,
   getDriverTripInfo,
-  setDriverOnATrip
+  setDriverOnATrip,
+  setDriverWorking
 };

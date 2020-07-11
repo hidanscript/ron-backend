@@ -4,7 +4,7 @@ const {
     getDriverTripInfo, 
     setDriverOnATrip 
 } = require('./services/driver/lib');
-const { getTripInQueueByUser } = require('./services/trips/lib');
+const { getTripInQueueByUser, cancelTrip } = require('./services/trips/lib');
 const { getDistance } = require('./lib/functions');
 const { connect } = require('./middlewares');
 
@@ -48,41 +48,33 @@ function init(server) {
         socket.on("TRIP_IN_QUEUE", async (userid) => {
             const tripData = await getTripInQueueByUser(userid); //Gets the trip data
             const trip = tripData[0];
-            if(!Object.keys(connectedDrivers).length) {
-                const userConnection = connectedUsers[trip.UserID];
-                io.to(userConnection.socketid).emit("NOT_DRIVERS_AVAILABLE");
-            };
-            const startPosition = { latitude: trip.StartLocationLatitude, longitude: trip.StartLocationLongitude };
-            const driversWorking = await getDriversWorkingAvailable(); //Gets drivers data that are not in a trip and are available
-            const nearDriversWorking = driversWorking.filter(driver => {
-                const driverPosition = { latitude: driver.CurrentLocationLatitude, longitude: driver.CurrentLocationLongitude };
-                return getDistance(startPosition, driverPosition) < 8000;
-            }); //filters the drivers that are at max 8km away from the start position
-            try {
-                nearDriversWorking.forEach(async driver => {
-                    if(isConnected(connectedDrivers, driver.driverid)) {
-                        const driverConnection = connectedDrivers[driver.DriverID];
-                        io.to(driverConnection.socketid).emit("NEW_TRIP", trip, tripAccepted => {
-                            if(tripAccepted) {
-                                if(setDriverOnATrip(driver.driverid, trip.TripID)) {
-                                    const userConnection = connectedUsers[trip.UserID];
-                                    io.to(userConnection.socketid).emit("DRIVER_FOUND", trip, driver.driverid);
-                                    throw BreakException;
-                                }
-                            }
-                        });
-                    }
-                });
-            } catch(error) {
-                if (e !== BreakException) throw e;
+            if(trip) {
+                if(!Object.keys(connectedDrivers).length) {
+                    notifyUserNotDriverAvailable(trip.UserID);
+                    cancelTrip(trip.TripID);
+                    return;
+                };
+
+                const startPosition = { 
+                    latitude: trip.StartLocationLatitude, 
+                    longitude: trip.StartLocationLongitude 
+                };
+                const driversWorking = await getDriversWorkingAvailable(); //Gets drivers data that are not in a trip and are available
+                const nearDriversWorking = driversWorking.filter(driver => {
+                    const driverPosition = { 
+                        latitude: driver.CurrentLocationLatitude, 
+                        longitude: driver.CurrentLocationLongitude 
+                    };
+                    return getDistance(startPosition, driverPosition) < 800000000;
+                }); //filters the drivers that are at max 8km away from the start position
+                notifyDriversAboutNewTrip(nearDriversWorking, trip); // Here is the magic.
             }
-            
         });
 
         socket.on("TRIP_ACCEPTED", tripdata => {
             if(isConnected(connectedUsers, tripdata.userid)) {
                 const userConnection = connectedUsers[tripdata.userid];
-                io.to(userConnection.socketid).emit("driver found", tripdata);
+                io.to(userConnection.socketid).emit("DRIVER_FOUND", tripdata);
             }
         });
 
@@ -94,11 +86,60 @@ function init(server) {
                 connectedDrivers = removeConnection(connectedDrivers, socket.driver.driverid);
             }
          });
-        
-    });
 
-   
+        function notifyUserNotDriverAvailable(userid) {
+            const userConnection = connectedUsers[userid];
+            io.to(userConnection.socketid).emit("NOT_DRIVERS_AVAILABLE");
+        }
+
+        function notifyDriversAboutNewTrip(driverlist = [], trip, exceptionIDs = []) {
+            let currentDriver, newDriverList;
+            if(driverlist.length) {
+                if(exceptionIDs.length) {
+                    newDriverList = driverlist.filter(driver => filterDriversThatAlreadyRefused(driver, exceptionIDs));
+                }
+                if(newDriverList.length) {
+                    currentDriver = newDriverList[0];
+                } else {
+                    notifyUserNotDriverAvailable(trip.UserID);
+                    cancelTrip(trip.TripID);
+                    return;
+                }
+            } else {
+                notifyUserNotDriverAvailable(trip.UserID);
+                cancelTrip(trip.TripID);
+                return;
+            }
+        
+            if(isConnected(connectedDrivers, currentDriver.DriverID)) {
+                const driverConnection = connectedDrivers[currentDriver.DriverID];
+                io.to(driverConnection.socketid).emit("NEW_TRIP", trip, tripAccepted => {
+                    if(tripAccepted) {
+                        if(setDriverOnATrip(currentDriver.DriverID, trip.TripID)) {
+                            const userConnection = connectedUsers[trip.UserID];
+                            io.to(userConnection.socketid).emit("DRIVER_FOUND", trip, currentDriver.DriverID);
+                            return;
+                        }
+                    } else {
+                        exceptionIDs.push(currentDriver.DriverID);
+                        notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);
+                    }
+                });
+            } else {
+                exceptionIDs.push(currentDriver.DriverID);
+                notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);
+            }
+        }
+        
+    });   
 }
+
+function filterDriversThatAlreadyRefused(driver, exceptionIDs) {
+    for(let i = 0; i < exceptionIDs.length; i++) {
+        if(driver.DriverID === exceptionIDs[i]) return false;
+    }
+    return true;
+} 
 
 function addConnection(connectionList, connectionData) {
     let newConnectionList = Object.assign({}, connectionList);

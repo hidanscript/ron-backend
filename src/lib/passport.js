@@ -33,6 +33,7 @@ passport.use('local-signup-driver', new LocalStrategy({
     if(validateDriver(driverData)) {
         try {
             const newDriver = await createDriver(driverData, username, password);
+            console.log("HOLA")
             return done( null, newDriver );
         } catch(error) {
             return done( null, false, { error: true, message: error });
@@ -80,12 +81,17 @@ passport.use('local-login-driver', new LocalStrategy({
 }));
 
 passport.serializeUser((connection, done) => {
-    done(null, connection.id);
+    done(null, connection);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (connection, done) => {
     console.log("desirialize")
-    console.log(id)
-   const rows = await db.query("SELECT * FROM User WHERE UserID = ?", id);
+    console.log(connection)
+    let rows;
+    if(connection.type = 'driver') {
+        rows = await db.query("SELECT * FROM Driver WHERE DriverID = ?", connection.id);
+    } else {
+        rows = await db.query("SELECT * FROM User WHERE UserID = ?", connection.id);
+    }
    done(null, rows[0]);
 })

@@ -25,7 +25,15 @@ const getTripInQueueByUser = async userid => {
   }
 }
 
+const cancelTrip = async tripid => {
+  try {
+    await db.query("CALL Trip_Baja_sp(?)", tripid);
+    console.log("TRIP CANCELED");
+  } catch(err) { }
+}
+
 module.exports = {
   createTrip,
-  getTripInQueueByUser
+  getTripInQueueByUser,
+  cancelTrip
 };
