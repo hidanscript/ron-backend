@@ -9,10 +9,12 @@ const createUser = async (username, password, userData) => {
         email: username,
         name: userData.name,
         password: encryptedPassword,
-        cellphone: userData.cellphone,
-        dni: userData.dni,
-        country: userData.country
+        cellphone: parseInt(userData.cellphone),
+        dni: parseInt(userData.dni),
+        country: userData.selectedCountry
     }
+    console.log("new user");
+    console.log(newUser);
     try {
         const result = await db.query("INSERT INTO User SET ?", newUser);
         newUser.id = result.insertId;
