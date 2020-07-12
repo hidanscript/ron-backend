@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { auth } = require('../../auth');
-const { getUserById } = require('../../../services/user/lib');
+const { getUserById, getTripByUserID } = require('../../../services/user/lib');
 const nodemailer = require('nodemailer');
 const router = Router();
 
@@ -39,6 +39,17 @@ router.post('/login', passport.authenticate('local-login'), (req, res) => {
 router.get('/logout', auth, async (req, res) => {
     req.session.destroy();
     res.json({ success: true });
+});
+
+router.get('/trip', auth, async (req, res) => {
+    const userid = req.session.passport.user;
+    const tripData = await getTripByUserID(userid);
+    if(tripData) {
+        res.status(200);
+        res.json({ success: true, trip: tripData });
+    } else {
+        res.json({ success: false })
+    }
 });
 
 module.exports = router;

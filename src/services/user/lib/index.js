@@ -3,7 +3,7 @@ const db = require('../../../lib/db_connection');
 const auth = require('../../../lib/auth');
 
 const createUser = async (username, password, userData) => {
-    const encryptedPassword = await auth.encryptPassword(password);
+    const encryptedPassword = auth.encryptPassword(password);
 
     const newUser = {
         email: username,
@@ -46,9 +46,15 @@ const getUserByEmail = async email => {
     return user.length ? user[0] : false;
 }
 
+const getTripByUserID = async userid => {
+    const trip = await db.query("CALL GetUncompletedTripByUserID_Cons_sp(?)", userid);
+    return trip.length ? trip[0] : false;
+}
+
 module.exports = {
     createUser,
     validateUser,
     getUserById,
-    getUserByEmail
+    getUserByEmail,
+    getTripByUserID
 }

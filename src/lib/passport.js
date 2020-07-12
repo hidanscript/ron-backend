@@ -51,8 +51,11 @@ passport.use('local-login', new LocalStrategy({
 }, async (req, username, password, done) => {
     try {
         const user = await getUserByEmail(username);
-        if(!user) return done( null, false );        
+        console.log(user);
+        if(!user) return done( null, false );
+        console.log(user.Password);
         if(bcrypt.compareSync(password, user.Password)) {
+            user.id  = user.UserID;
             return done( null, user );
         } else {
             console.log('invalid password');
