@@ -9,6 +9,9 @@ const createUser = async (username, password, userData) => {
         email: username,
         name: userData.name,
         password: encryptedPassword,
+        cellphone: userData.cellphone,
+        dni: userData.dni,
+        country: userData.country
     }
     try {
         const result = await db.query("INSERT INTO User SET ?", newUser);
