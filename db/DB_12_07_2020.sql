@@ -1,1 +1,1 @@
-alter table user add column dni int null
+alter table User add column dni int null;
