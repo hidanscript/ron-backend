@@ -20,7 +20,7 @@ router.post('/', passport.authenticate('local-signup'), (req, res) => {
     mailOptions={
         to : req.body.email,
         subject : "¡Bienvenido!",
-        html : "<h1><b>¡Bienvenido a RON!</b></h1><br><h2>¡Muchas gracias por registrarse!<br>¡Se le será notificado por este medio cuando la app esté disponible en su país!</h2>" 
+        html : '<h1 style="text-align:center;"><b>¡Bienvenido a RON!</b></h1><br><h2 style="text-align:center;">¡Muchas gracias por registrarse!<br>¡Se le será notificado por este medio cuando la app esté disponible en su país!</h2>' 
     }
 
     smtpTransport.sendMail(mailOptions, function(error, response){ });
