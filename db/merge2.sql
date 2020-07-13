@@ -241,7 +241,11 @@ CREATE PROCEDURE UserTripsInQueue_Cons_sp(IN UserID INT)
 BEGIN
 
     SELECT
-        *
+        TR.TripID,
+        TR.StartLocationLatitude,
+        TR.StartLocationLongitude,
+        TR.FinalLocationLatitude,
+        TR.FinalLocationLongitude
     FROM
         TripsQueue as TIQ
         inner join Trips as TR on TIQ.TripID = TR.TripID
