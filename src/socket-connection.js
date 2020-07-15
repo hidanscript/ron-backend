@@ -4,7 +4,7 @@ const {
     getDriverTripInfo, 
     setDriverOnATrip 
 } = require('./services/driver/lib');
-const { getTripInQueueByUser, cancelTrip } = require('./services/trips/lib');
+const { getTripInQueueByUser, cancelTrip, completeTrip } = require('./services/trips/lib');
 const { getDistance } = require('./lib/functions');
 const { connect } = require('./middlewares');
 
@@ -39,10 +39,20 @@ function init(server) {
             if(driverCurrentTripInfo) { //If the driver is on a trip, send the data also to the user.
                 if(isConnected(connectedUsers, driverCurrentTripInfo.UserID)) { //If the user is in connected users
                     const userConnection = connectedUsers[driverCurrentTripInfo.UserID];
-                    io.to(userConnection.socketid).emit("DRIVER_POSITION_UPDATED", newDriverPosition);
+                    io.to(userConnection.socketid).emit("DRIVER_POSITION_UPDATED", { latitude, longitude, driverid });
+                    const finalLocationCoords = { 
+                        latitude: driverCurrentTripInfo.FinalLocationLatitude, 
+                        longitude: driverCurrentTripInfo.FinalLocationLongitude 
+                    };
+                    const distanceBetweenCurrentPosAndFinalPos = getDistance({ latitude, longitude }, finalLocationCoords );
+                    if(distanceBetweenCurrentPosAndFinalPos <= 100) { // If the distance to final location is less than 100m
+                        io.to(userConnection.socketid).emit("TRIP_COMPLETED");
+                        io.to(driverConnection.socketid).emit("TRIP_COMPLETED");
+                        completeTrip(driverCurrentTripInfo.TripID, driverid);
+                    }
                 }
             }
-            io.to(driverConnection.socketid).emit("DRIVER_POSITION_UPDATED", newDriverPosition);
+            io.to(driverConnection.socketid).emit("DRIVER_POSITION_UPDATED", { latitude, longitude, driverid });
         });
 
         socket.on("TRIP_IN_QUEUE", async (userid) => {
@@ -115,11 +125,24 @@ function init(server) {
                 const driverConnection = connectedDrivers[currentDriver.DriverID];
                 io.to(driverConnection.socketid).emit("NEW_TRIP", trip, tripAccepted => {
                     if(tripAccepted) {
-                        if(setDriverOnATrip(currentDriver.DriverID, trip.TripID)) {
-                            const userConnection = connectedUsers[trip.UserID];
-                            io.to(userConnection.socketid).emit("DRIVER_FOUND", trip, currentDriver.DriverID);
-                            return;
+                        setDriverOnATrip(currentDriver.DriverID, trip.TripID)
+                        const userConnection = connectedUsers[trip.UserID];
+                        const tripAppData = {
+                            id: trip.TripID,
+                            startStreetName: trip.StartStreetName,
+                            finalStreetName: trip.FinalStreetName,
+                            startLocation: {
+                                latitude: trip.StartLocationLatitude,
+                                longitude: trip.FinalLocationLongitude,
+                            },
+                            finalLocation: {
+                                latitude: trip.FinalLocationLatitude,
+                                longitude: trip.FinalLocationLongitude
+                            }
                         }
+                        const tripFinalData = { trip: tripAppData, driverid: currentDriver.DriverID};
+                        io.to(userConnection.socketid).emit("DRIVER_FOUND", tripFinalData );
+                        return;
                     } else {
                         exceptionIDs.push(currentDriver.DriverID);
                         notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);

@@ -40,11 +40,11 @@ const getDriverById = async (driverid) => {
 
 const updateDriverPosition = async (driverid, latitude, longitude) => {
   try {
-    const driver = await db.query(
+    await db.query(
       "UPDATE Driver SET CurrentLocationLatitude = ?, CurrentLocationLongitude = ? WHERE DriverID = ?",
       [latitude, longitude, driverid]
     );
-    return driver;
+    return { driverid, latitude, longitude };
   } catch (error) {
     return false;
   }

@@ -1,8 +1,8 @@
 const db = require("../../../lib/db_connection");
 
 const createTrip = async (userid, tripData, distance, price) => {
-  const { country, startLocation, finalLocation } = tripData;
-  const newTrip = await db.query("CALL Trip_Alta_sp(?, ?, ?, ?, ?, ?, ?, ?)", [
+  const { country, startLocation, finalLocation, startStreetName, finalStreetName } = tripData;
+  const newTrip = await db.query("CALL Trip_Alta_sp(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
     userid,
     country,
     startLocation.latitude,
@@ -11,6 +11,8 @@ const createTrip = async (userid, tripData, distance, price) => {
     finalLocation.longitude,
     distance,
     price,
+    startStreetName,
+    finalStreetName
   ]);
 
   return newTrip;
@@ -25,6 +27,15 @@ const getTripInQueueByUser = async userid => {
   }
 }
 
+const completeTrip = async (tripid, driverid) => {
+  try {
+    await db.query("CALL CompleteTrip_sp(?, ?)", [tripid, driverid]);
+    return true;
+  } catch(error) {
+    return false;
+  }
+}
+
 const cancelTrip = async tripid => {
   try {
     await db.query("CALL Trip_Baja_sp(?)", tripid);
@@ -35,5 +46,6 @@ const cancelTrip = async tripid => {
 module.exports = {
   createTrip,
   getTripInQueueByUser,
-  cancelTrip
+  cancelTrip,
+  completeTrip
 };

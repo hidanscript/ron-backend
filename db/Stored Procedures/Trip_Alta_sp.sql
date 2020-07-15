@@ -8,7 +8,9 @@ CREATE PROCEDURE Trip_Alta_sp(
     IN TripFinalLocationLatitude VARCHAR(50),
     IN TripFinalLocationLongitude VARCHAR(50),
     IN TripDistanceKM INT,
-    IN TripPriceARS DECIMAL(13, 2)
+    IN TripPriceARS DECIMAL(13, 2),
+    IN TripStartStreetName varchar(100),
+    IN TripFinalStreetName varchar(100)
 )
 
 BEGIN
@@ -25,7 +27,9 @@ BEGIN
             FinalLocationLatitude, 
             FinalLocationLongitude, 
             DistanceKM, 
-            PriceARS
+            PriceARS,
+            StartStreetName,
+            FinalStreetName
         )
     VALUES
         (
@@ -36,7 +40,9 @@ BEGIN
             TripFinalLocationLatitude,
             TripFinalLocationLongitude,
             TripDistanceKM,
-            TripPriceARS
+            TripPriceARS,
+            TripStartStreetName,
+            TripFinalStreetName
         );
 
     SET last_trip_inserted_id = LAST_INSERT_ID();

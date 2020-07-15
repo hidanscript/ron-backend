@@ -10,6 +10,13 @@ BEGIN
 		Dr.CurrentlyInATrip = 1
 	WHERE
 		Dr.DriverID = DriverID;
+	
+    UPDATE
+		Trip as TR
+	SET
+		TR.DriverID = DriverID
+	WHERE
+		TR.TripID = TripIDProvided;
         
 	DELETE FROM
 		tripsqueue
