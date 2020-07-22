@@ -8,10 +8,10 @@ const createDriver = async (driverData, username, password) => {
   const newDriver = {
     email: username,
     name: driverData.name,
-    dni: driverData.dni,
+    dni: parseInt(driverData.dni),
     currentLocationLatitude: driverData.currentLocationLatitude,
     currentLocationLongitude: driverData.currentLocationLongitude,
-    cellphone: driverData.cellphone,
+    cellphone: parseInt(driverData.cellphone),
     password: encryptedPassword,
   };
 
@@ -24,9 +24,7 @@ const createDriver = async (driverData, username, password) => {
 const validateDriver = (driverData) => {
   const { name, dni, cellphone } = driverData;
   return (
-    isString(name) &&
-    isNumber(dni) &&
-    isNumber(cellphone)
+    isString(name)
   );
 };
 

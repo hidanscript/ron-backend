@@ -33,10 +33,12 @@ passport.use('local-signup-driver', new LocalStrategy({
     const driverData = { ...req.body };
     if(validateDriver(driverData)) {
         try {
+            console.log("d")
             const newDriver = await createDriver(driverData, username, password);
             console.log("HOLA")
             return done( null, newDriver );
         } catch(error) {
+            console.log(error)
             return done( null, false, { error: true, message: error });
         }
     } else {
@@ -75,10 +77,12 @@ passport.use('local-login-driver', new LocalStrategy({
     try {
         const driver = await getDriverByEmail(username);
         if(!driver) return done( null, false );
-        if(await bcrypt.compareSync(password, driver.Password))
+        if(bcrypt.compareSync(password, driver.Password)) {
+            driver.id  = driver.DriverID;
             return done( null, driver );
-        else
+        } else {
             return done( null, false, { error: true, message: 'Invalid credentials' });
+        }
     } catch(error) {
         return done( null, false, { error: true, message: error });
     }
@@ -86,18 +90,19 @@ passport.use('local-login-driver', new LocalStrategy({
 
 passport.serializeUser((connection, done) => {
     console.log("serialized")
-    done(null, connection.id);
+    done(null, connection);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (connection, done) => {
+    const { id, type } = connection;
     console.log("desirialize")
     let rows;
-    rows = await db.query("SELECT * FROM User WHERE UserID = ?", id);
-    /*
-    if(connection.type = 'driver') {
-        rows = await db.query("SELECT * FROM Driver WHERE DriverID = ?", connection.id);
+    //rows = await db.query("SELECT * FROM User WHERE UserID = ?", id);
+    
+    if(type === 'driver') {
+        rows = await db.query("SELECT * FROM Driver WHERE DriverID = ?", id);
     } else {
-        rows = await db.query("SELECT * FROM User WHERE UserID = ?", connection.id);
-    } */
+        rows = await db.query("SELECT * FROM User WHERE UserID = ?", id);
+    }
    done(null, rows[0]);
 })
