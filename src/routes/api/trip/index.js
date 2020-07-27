@@ -6,7 +6,7 @@ const { auth } = require("../../auth");
 const router = Router();
 
 router.post("/", auth, async (req, res) => {
-  const userid = req.session.passport.user;
+  const userid = req.session.passport.user.id;
   const tripData = { ...req.body };
   const { startLocation, finalLocation } = req.body;
   const distance = getDistance(startLocation, finalLocation);
@@ -18,6 +18,7 @@ router.post("/", auth, async (req, res) => {
     res.json({ trip: newTrip, success: true });
   } catch (error) {
     res.status(500);
+    console.log(error)
     res.json({ success: false, error: true, message: error });
   }
 });

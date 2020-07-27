@@ -17,12 +17,13 @@ router.get('/', auth, async (req, res) => {
 });
 
 router.post('/login', passport.authenticate('local-login-driver'), (req, res) => {
-    res.json({ success: true , userid: req.session.passport.user });
+    res.json({ success: true , userid: req.session.passport.user.id });
 });
 
-router.get('/working', auth, async (req, res) => {
+router.post('/working', auth, async (req, res) => {
+    const { latitude, longitude, stop } = req.body;
     const driver = await getDriverById(req.session.passport.user.id);
-    setDriverWorking(driver.DriverID);
+    setDriverWorking(driver[0].DriverID, latitude, longitude, stop);
     res.json(driver);
 });
 

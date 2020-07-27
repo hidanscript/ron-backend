@@ -15,7 +15,6 @@ passport.use('local-signup', new LocalStrategy({
     if(validateUser(username, password, userData)) {
         try {
             const newUser = await createUser(username, password, userData);
-            console.log("hey")
             return done( null, newUser );
         } catch(error) {
             return done( null, false, { error: true, message: error });

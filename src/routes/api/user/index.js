@@ -24,16 +24,16 @@ router.post('/', passport.authenticate('local-signup'), (req, res) => {
     }
 
     smtpTransport.sendMail(mailOptions, function(error, response){ });
-    res.json({ success: true, userid: req.session.passport.user });
+    res.json({ success: true, userid: req.session.passport.user.id });
 });
 
 router.get('/', auth, async (req, res) => {
-    const user = await getUserById(req.session.passport.user);
-    res.json({...user, userid: req.session.passport.user});
+    const user = await getUserById(req.session.passport.user.id);
+    res.json({...user, userid: req.session.passport.user.id});
 });
 
 router.post('/login', passport.authenticate('local-login'), (req, res) => {
-    res.json({ success: true , userid: req.session.passport.user });
+    res.json({ success: true , userid: req.session.passport.user.id });
 });
 
 router.get('/logout', auth, async (req, res) => {
@@ -42,7 +42,7 @@ router.get('/logout', auth, async (req, res) => {
 });
 
 router.get('/trip', auth, async (req, res) => {
-    const userid = req.session.passport.user;
+    const userid = req.session.passport.user.id;
     const tripData = await getTripByUserID(userid);
     if(tripData) {
         res.status(200);

@@ -29,15 +29,14 @@ const validateDriver = (driverData) => {
 };
 
 const getDriverById = async (driverid) => {
-  const user = await db.query(
-    "SELECT * FROM Driver WHERE DriverID = ?",
-    driverid
-  );
-  return user;
+  const user = await db.query("CALL GetDriverById_sp(?)", driverid);
+  return user[0];
 };
 
 const updateDriverPosition = async (driverid, latitude, longitude) => {
   try {
+    console.log('latitude', latitude);
+    console.log('longitude', longitude);
     await db.query(
       "UPDATE Driver SET CurrentLocationLatitude = ?, CurrentLocationLongitude = ? WHERE DriverID = ?",
       [latitude, longitude, driverid]
@@ -51,7 +50,7 @@ const updateDriverPosition = async (driverid, latitude, longitude) => {
 const getDriversWorkingAvailable = async() => {
   try {
     const driverList = await db.query("CALL GetWorkingDriversAvailable_sp()");
-    return driverList.length ? driverList : false;
+    return driverList.length ? driverList[0] : false;
   } catch (e) { 
     return false;
   }
@@ -84,9 +83,13 @@ const setDriverOnATrip = async (driverid, tripidprovided) => {
   }
 }
 
-const setDriverWorking = async driverid => {
+const setDriverWorking = async (driverid, latitude, longitude, stop) => {
   try {
-    await db.query("CALL SetDriverWorking_sp(?)", driverid );
+    if(stop) {
+      await db.query("CALL StopDriverWorking_sp(?)", [driverid] );
+    } else {
+      await db.query("CALL SetDriverWorking_sp(?,?,?)", [driverid, latitude, longitude] );
+    }
     return true;
   } catch(error) {
     return false;

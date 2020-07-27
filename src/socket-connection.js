@@ -77,6 +77,7 @@ function init(server) {
                     };
                     return getDistance(startPosition, driverPosition) < 800000000;
                 }); //filters the drivers that are at max 8km away from the start position
+                console.log('Drivers working', nearDriversWorking);
                 notifyDriversAboutNewTrip(nearDriversWorking, trip); // Here is the magic.
             }
         });
@@ -90,9 +91,11 @@ function init(server) {
 
         socket.on('disconnect', () => {
             if(socket.user) {
+                console.log('User disconnected');
                 connectedUsers = removeConnection(connectedUsers, socket.user.userId);
             }
             if(socket.driver) {
+                console.log('Driver disconnected');
                 connectedDrivers = removeConnection(connectedDrivers, socket.driver.driverid);
             }
          });
@@ -103,7 +106,8 @@ function init(server) {
         }
 
         function notifyDriversAboutNewTrip(driverlist = [], trip, exceptionIDs = []) {
-            let currentDriver, newDriverList;
+            let currentDriver;
+            let newDriverList = [];
             if(driverlist.length) {
                 if(exceptionIDs.length) {
                     newDriverList = driverlist.filter(driver => filterDriversThatAlreadyRefused(driver, exceptionIDs));
@@ -168,8 +172,7 @@ function addConnection(connectionList, connectionData) {
     let newConnectionList = Object.assign({}, connectionList);
     if("userId" in connectionData) {
         newConnectionList[connectionData.userId] = connectionData;
-    }
-    if("driverid" in connectionData) {
+    } else if("driverid" in connectionData) {
         newConnectionList[connectionData.driverid] = connectionData;
     }
     return newConnectionList;

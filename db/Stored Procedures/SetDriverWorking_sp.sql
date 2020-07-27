@@ -1,11 +1,13 @@
 DROP PROCEDURE IF EXISTS SetDriverWorking_sp;
 DELIMITER $$
-CREATE PROCEDURE SetDriverWorking_sp(IN DriverIDProvided INT)
+CREATE PROCEDURE SetDriverWorking_sp(IN DriverIDProvided INT, IN LatitudeProvided VARCHAR(150), IN LongitudeProvided VARCHAR(150))
 
 BEGIN
 	INSERT INTO	
-		driversworking
+		driversworking (DriverID, Latitude, Longitude)
 	VALUES (
-		DriverID = DriverIDProvided
+		DriverIDProvided,
+        LatitudeProvided,
+        LongitudeProvided
     );
 END

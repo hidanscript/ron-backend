@@ -2,6 +2,7 @@ const db = require("../../../lib/db_connection");
 
 const createTrip = async (userid, tripData, distance, price) => {
   const { country, startLocation, finalLocation, startStreetName, finalStreetName } = tripData;
+  console.log(startStreetName);
   const newTrip = await db.query("CALL Trip_Alta_sp(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
     userid,
     country,
@@ -14,7 +15,7 @@ const createTrip = async (userid, tripData, distance, price) => {
     startStreetName,
     finalStreetName
   ]);
-
+  console.log(newTrip)
   return newTrip;
 };
 
