@@ -2,11 +2,11 @@ const {
     updateDriverPosition, 
     getDriversWorkingAvailable, 
     getDriverTripInfo, 
-    setDriverOnATrip 
+    setDriverOnATrip, 
+    getDriverById
 } = require('./services/driver/lib');
 const { getTripInQueueByUser, cancelTrip, completeTrip } = require('./services/trips/lib');
 const { getDistance } = require('./lib/functions');
-const { connect } = require('./middlewares');
 
 const BreakException = {};
 let connectedUsers = {};
@@ -14,9 +14,7 @@ let connectedDrivers = {};
 
 function init(server) {
     const io = require('socket.io')(server);
-
     io.on("connection", (socket) => {
-
         socket.on('USER_CONNECTED', (user) => {
             user.socketid = socket.id;
             connectedUsers = addConnection(connectedUsers, user);
@@ -33,13 +31,21 @@ function init(server) {
 
         socket.on("UPDATE_DRIVER_POSITION", async locationData => {
             const { driverid, latitude, longitude } = locationData;
-            const newDriverPosition = await updateDriverPosition(driverid, latitude, longitude);
+            updateDriverPosition(driverid, latitude, longitude);
             const driverConnection = connectedDrivers[driverid];
             const driverCurrentTripInfo = await getDriverTripInfo(driverid);
             if(driverCurrentTripInfo) { //If the driver is on a trip, send the data also to the user.
                 if(isConnected(connectedUsers, driverCurrentTripInfo.UserID)) { //If the user is in connected users
                     const userConnection = connectedUsers[driverCurrentTripInfo.UserID];
-                    io.to(userConnection.socketid).emit("DRIVER_POSITION_UPDATED", { latitude, longitude, driverid });
+                    const driverInfo = await getDriverById(driverid);
+                    io.to(userConnection.socketid).emit("DRIVER_POSITION_UPDATED", { 
+                        latitude, 
+                        longitude, 
+                        driverid, 
+                        nombre: driverInfo.Name,
+                        modeloAuto: driverInfo.ModeloAuto,
+                        matricula: driverInfo.Matricula
+                    });
                     const finalLocationCoords = { 
                         latitude: driverCurrentTripInfo.FinalLocationLatitude, 
                         longitude: driverCurrentTripInfo.FinalLocationLongitude 
@@ -64,7 +70,6 @@ function init(server) {
                     cancelTrip(trip.TripID);
                     return;
                 };
-
                 const startPosition = { 
                     latitude: trip.StartLocationLatitude, 
                     longitude: trip.StartLocationLongitude 
@@ -157,7 +162,6 @@ function init(server) {
                 notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);
             }
         }
-        
     });   
 }
 

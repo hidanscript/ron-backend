@@ -38,7 +38,7 @@ const validateUser = (username, password, userData) => {
 
 const getUserById = async userid => {
     const user = await db.query("SELECT UserID, Name, Email, Trips FROM User WHERE UserID = ?", userid);
-    return user;
+    return user[0];
 }
 
 const getUserByEmail = async email => {

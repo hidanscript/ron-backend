@@ -29,6 +29,7 @@ router.post('/', passport.authenticate('local-signup'), (req, res) => {
 
 router.get('/', auth, async (req, res) => {
     const user = await getUserById(req.session.passport.user.id);
+    console.log('Passport id: ', req.session.passport.user.id);
     res.json({...user, userid: req.session.passport.user.id});
 });
 
@@ -44,11 +45,11 @@ router.get('/logout', auth, async (req, res) => {
 router.get('/trip', auth, async (req, res) => {
     const userid = req.session.passport.user.id;
     const tripData = await getTripByUserID(userid);
-    if(tripData) {
+    if(tripData && tripData.length) {
         res.status(200);
         res.json({ success: true, trip: tripData });
     } else {
-        res.json({ success: false })
+        res.json({ success: false });
     }
 });
 
