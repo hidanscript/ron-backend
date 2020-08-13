@@ -24,7 +24,7 @@ class User {
         let distanceInKilometers = distance / 1000;
         // If the trips is less than 1km, set 1km by default
         distanceInKilometers = distanceInKilometers < 1 ? 1 : Math.round(distanceInKilometers);
-        const points = distanceInKilometers * 10;
+        const points = distanceInKilometers * 25;
         this.points += points;
         db.query('UPDATE User SET Points = ? WHERE UserID = ?', [ this.points, this.id ]);
     }
