@@ -7,6 +7,7 @@ const {
 } = require('./services/driver/lib');
 const { getTripInQueueByUser, cancelTrip, completeTrip } = require('./services/trips/lib');
 const { getDistance } = require('./lib/functions');
+const User = require('./models/user');
 
 const BreakException = {};
 let connectedUsers = {};
@@ -46,12 +47,20 @@ function init(server) {
                         modeloAuto: driverInfo.ModeloAuto,
                         matricula: driverInfo.Matricula
                     });
+                    const startLocationCoords = { 
+                        latitude: driverCurrentTripInfo.StartLocationLatitude, 
+                        longitude: driverCurrentTripInfo.StartLocationLongitude 
+                    };
                     const finalLocationCoords = { 
                         latitude: driverCurrentTripInfo.FinalLocationLatitude, 
                         longitude: driverCurrentTripInfo.FinalLocationLongitude 
                     };
                     const distanceBetweenCurrentPosAndFinalPos = getDistance({ latitude, longitude }, finalLocationCoords );
                     if(distanceBetweenCurrentPosAndFinalPos <= 100) { // If the distance to final location is less than 100m
+                        const user = new User(driverCurrentTripInfo.UserID);
+                        const pointsDistance = getDistance(startLocationCoords, finalLocationCoords);
+                        user.config();
+                        user.addPoints(pointsDistance);
                         io.to(userConnection.socketid).emit("TRIP_COMPLETED");
                         io.to(driverConnection.socketid).emit("TRIP_COMPLETED");
                         completeTrip(driverCurrentTripInfo.TripID, driverid);
