@@ -2,7 +2,15 @@ const { Router } = require('express');
 const { auth } = require('../../auth');
 const { getDriverById, setDriverWorking } = require('../../../services/driver/lib');
 const multer = require('multer');
-const upload = multer({ dest: '../../../uploads/' });
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + '.png')
+    }
+});
+const upload = multer({ storage });
 const router = Router();
 
 const passport = require('passport');
@@ -14,6 +22,21 @@ router.post('/', passport.authenticate('local-signup-driver'), (req, res) => {
 router.get('/', auth, async (req, res) => {
     const driver = await getDriverById(req.session.passport.user.id);
     res.json(driver);
+});
+
+router.post('/dni-front', upload.single('dnifront'), (req, res) => {
+    const file = req.file;
+    res.json({ filename: file.filename, success: true });
+});
+
+router.post('/dni-back', upload.single('dniback'), (req, res) => {
+    const file = req.file;
+    res.json({ filename: file.filename, success: true });
+});
+
+router.post('/license', upload.single('license'), (req, res) => {
+    const file = req.file;
+    res.json({ filename: file.filename, success: true });
 });
 
 router.post('/login', passport.authenticate('local-login-driver'), (req, res) => {

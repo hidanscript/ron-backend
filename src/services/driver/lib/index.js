@@ -8,8 +8,11 @@ const createDriver = async (driverData, username, password) => {
   const newDriver = {
     email: username,
     name: driverData.name,
-    dni: parseInt(driverData.dni),
+    dni: driverData.dni,
     currentLocationLatitude: driverData.currentLocationLatitude,
+    dniFrontImageUrl: driverData.dniFrontImage,
+    dniBackImageUrl: driverData.dniBackImage,
+    licenseUrl: driverData.licenseUrl,
     currentLocationLongitude: driverData.currentLocationLongitude,
     cellphone: parseInt(driverData.cellphone),
     password: encryptedPassword,

@@ -5,6 +5,7 @@ const { getDistanceString } = require('../../lib/functions');
 router.use('/user', require('./user'));
 router.use('/driver', require('./driver'));
 router.use('/trip', require('./trip'));
+router.use('/data', require('./data'));
 
 router.get('/test', async (req, res) => {
     const pos1 = { latitude: 35.4214124, longitude: 35.222121 };
