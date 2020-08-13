@@ -36,12 +36,12 @@ const validateUser = (username, password, userData) => {
 }
 
 const getUserById = async userid => {
-    const user = await db.query("SELECT UserID, Name, Email, Trips FROM User WHERE UserID = ?", userid);
+    const user = await db.query("SELECT UserID, Name, Email, Points, Trips FROM User WHERE UserID = ?", userid);
     return user[0];
 }
 
 const getUserByEmail = async email => {
-    const user = await db.query("SELECT UserID, Name, Email, Password, Trips FROM User WHERE Email = ?", email);
+    const user = await db.query("SELECT UserID, Name, Email, Points, Password, Trips FROM User WHERE Email = ?", email);
     return user.length ? user[0] : false;
 }
 

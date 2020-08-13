@@ -29,7 +29,6 @@ router.post('/', passport.authenticate('local-signup'), (req, res) => {
 
 router.get('/', auth, async (req, res) => {
     const user = await getUserById(req.session.passport.user.id);
-    console.log('Passport id: ', req.session.passport.user.id);
     res.json({...user, userid: req.session.passport.user.id});
 });
 
