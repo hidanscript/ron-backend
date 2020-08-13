@@ -4,7 +4,6 @@ const auth = require('../../../lib/auth');
 
 const createUser = async (username, password, userData) => {
     const encryptedPassword = auth.encryptPassword(password);
-
     const newUser = {
         email: username,
         name: userData.name,
