@@ -29,6 +29,16 @@ router.post('/dni-front', upload.single('dnifront'), (req, res) => {
     res.json({ filename: file.filename, success: true });
 });
 
+router.post('/green-blue-front', upload.single('greenbluefront'), (req, res) => {
+    const file = req.file;
+    res.json({ filename: file.filename, success: true });
+});
+
+router.post('/green-blue-back', upload.single('greenblueback'), (req, res) => {
+    const file = req.file;
+    res.json({ filename: file.filename, success: true });
+});
+
 router.post('/dni-back', upload.single('dniback'), (req, res) => {
     const file = req.file;
     res.json({ filename: file.filename, success: true });

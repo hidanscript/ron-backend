@@ -92,6 +92,7 @@ function init(server) {
                     return getDistance(startPosition, driverPosition) < 800000000;
                 }); //filters the drivers that are at max 8km away from the start position
                 console.log('Drivers working', nearDriversWorking);
+                console.log('near drivers working', nearDriversWorking);
                 notifyDriversAboutNewTrip(nearDriversWorking, trip); // Here is the magic.
             }
         });
@@ -125,10 +126,13 @@ function init(server) {
             if(driverlist.length) {
                 if(exceptionIDs.length) {
                     newDriverList = driverlist.filter(driver => filterDriversThatAlreadyRefused(driver, exceptionIDs));
+                } else {
+                    newDriverList = driverlist;
                 }
                 if(newDriverList.length) {
                     currentDriver = newDriverList[0];
                 } else {
+                    console.log('dou')
                     notifyUserNotDriverAvailable(trip.UserID);
                     cancelTrip(trip.TripID);
                     return;
@@ -158,7 +162,17 @@ function init(server) {
                                 longitude: trip.FinalLocationLongitude
                             }
                         }
-                        const tripFinalData = { trip: tripAppData, driverid: currentDriver.DriverID};
+                        const tripFinalData = { 
+                            trip: tripAppData, 
+                            driver: {
+                                driverid: currentDriver.DriverID,
+                                latitude: currentDriver.CurrentLocationLatitude,
+                                longitude: currentDriver.CurrentLocationLongitude,
+                                nombre: currentDriver.Name,
+                                modeloAuto: currentDriver.ModeloAuto,
+                                matricula: currentDriver.Matricula
+                            }
+                        };
                         io.to(userConnection.socketid).emit("DRIVER_FOUND", tripFinalData );
                         return;
                     } else {

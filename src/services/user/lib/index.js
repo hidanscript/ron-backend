@@ -12,15 +12,13 @@ const createUser = async (username, password, userData) => {
         dni: parseInt(userData.dni),
         country: userData.selectedCountry
     }
-    console.log("new user");
-    console.log(newUser);
+    
     try {
         const result = await db.query("INSERT INTO User SET ?", newUser);
         newUser.id = result.insertId;
         newUser.type = "user";
         return newUser;
     } catch(error) {
-        console.log(newUser)
         return false;
     }
     
