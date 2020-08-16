@@ -29,6 +29,11 @@ router.get('/get-pending-drivers', async (req, res) => {
     res.json([ ...driverList ]);
 });
 
+router.get('/get-working-markers', async (req, res) => {
+    const driverList = await db.query('SELECT * FROM DriversWorking');
+    res.json([ ...driverList ]);
+});
+
 router.post('/delete-driver', async (req, res) => {
     const { id } = req.body;
     const result = await db.query('UPDATE Driver SET Deleted = 1 WHERE DriverID = ?', [id]);
