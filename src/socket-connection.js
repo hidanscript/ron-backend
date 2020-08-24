@@ -32,11 +32,6 @@ function init(server) {
       driver.socket = socket;
       connectedDrivers = addConnection(connectedDrivers, driver);
       socket.driver = driver;
-      driver.socket.emit("NEW_TRIP", {
-
-      }, (test) => {
-          console.log(test);
-      })
       console.log(connectedDrivers);
     });
 
@@ -45,52 +40,54 @@ function init(server) {
       updateDriverPosition(driverid, latitude, longitude);
       const driverConnection = connectedDrivers[driverid];
       const driverCurrentTripInfo = await getDriverTripInfo(driverid);
-      if (driverCurrentTripInfo) {
-        //If the driver is on a trip, send the data also to the user.
-        if (isConnected(connectedUsers, driverCurrentTripInfo.UserID)) {
-          //If the user is in connected users
-          const userConnection = connectedUsers[driverCurrentTripInfo.UserID];
-          const driverInfo = await getDriverById(driverid);
-          io.to(userConnection.socketid).emit("DRIVER_POSITION_UPDATED", {
-            latitude,
-            longitude,
-            driverid,
-            nombre: driverInfo.Name,
-            modeloAuto: driverInfo.ModeloAuto,
-            matricula: driverInfo.Matricula,
-          });
-          const startLocationCoords = {
-            latitude: driverCurrentTripInfo.StartLocationLatitude,
-            longitude: driverCurrentTripInfo.StartLocationLongitude,
-          };
-          const finalLocationCoords = {
-            latitude: driverCurrentTripInfo.FinalLocationLatitude,
-            longitude: driverCurrentTripInfo.FinalLocationLongitude,
-          };
-          const distanceBetweenCurrentPosAndFinalPos = getDistance(
-            { latitude, longitude },
-            finalLocationCoords
-          );
-          if (distanceBetweenCurrentPosAndFinalPos <= 100) {
-            // If the distance to final location is less than 100m
-            const user = new User(driverCurrentTripInfo.UserID);
-            const pointsDistance = getDistance(
-              startLocationCoords,
+      try {
+        if (driverCurrentTripInfo) {
+          //If the driver is on a trip, send the data also to the user.
+          if (isConnected(connectedUsers, driverCurrentTripInfo.UserID)) {
+            //If the user is in connected users
+            const userConnection = connectedUsers[driverCurrentTripInfo.UserID];
+            const driverInfo = await getDriverById(driverid);
+            io.to(userConnection.socketid).emit("DRIVER_POSITION_UPDATED", {
+              latitude,
+              longitude,
+              driverid,
+              nombre: driverInfo.Name,
+              modeloAuto: driverInfo.ModeloAuto,
+              matricula: driverInfo.Matricula,
+            });
+            const startLocationCoords = {
+              latitude: driverCurrentTripInfo.StartLocationLatitude,
+              longitude: driverCurrentTripInfo.StartLocationLongitude,
+            };
+            const finalLocationCoords = {
+              latitude: driverCurrentTripInfo.FinalLocationLatitude,
+              longitude: driverCurrentTripInfo.FinalLocationLongitude,
+            };
+            const distanceBetweenCurrentPosAndFinalPos = getDistance(
+              { latitude, longitude },
               finalLocationCoords
             );
-            user.config();
-            user.addPoints(pointsDistance);
-            io.to(userConnection.socketid).emit("TRIP_COMPLETED");
-            io.to(driverConnection.socketid).emit("TRIP_COMPLETED");
-            completeTrip(driverCurrentTripInfo.TripID, driverid);
+            if (distanceBetweenCurrentPosAndFinalPos <= 100) {
+              // If the distance to final location is less than 100m
+              const user = new User(driverCurrentTripInfo.UserID);
+              const pointsDistance = getDistance(
+                startLocationCoords,
+                finalLocationCoords
+              );
+              user.config();
+              user.addPoints(pointsDistance);
+              io.to(userConnection.socketid).emit("TRIP_COMPLETED");
+              io.to(driverConnection.socketid).emit("TRIP_COMPLETED");
+              completeTrip(driverCurrentTripInfo.TripID, driverid);
+            }
           }
         }
-      }
-      io.to(driverConnection.socketid).emit("DRIVER_POSITION_UPDATED", {
-        latitude,
-        longitude,
-        driverid,
-      });
+        io.to(driverConnection.socketid).emit("DRIVER_POSITION_UPDATED", {
+          latitude,
+          longitude,
+          driverid,
+        });
+      } catch (err) {}
     });
 
     socket.on("TRIP_IN_QUEUE", async (userid) => {
@@ -146,7 +143,11 @@ function init(server) {
       io.to(userConnection.socketid).emit("NOT_DRIVERS_AVAILABLE");
     }
 
-    function notifyDriversAboutNewTrip(driverlist = [], trip, exceptionIDs = []) {
+    function notifyDriversAboutNewTrip(
+      driverlist = [],
+      trip,
+      exceptionIDs = []
+    ) {
       let currentDriver;
       let newDriverList = [];
       if (driverlist.length) {
@@ -173,41 +174,40 @@ function init(server) {
       if (isConnected(connectedDrivers, currentDriver.DriverID)) {
         const driverConnection = connectedDrivers[currentDriver.DriverID];
         driverConnection.socket.emit("NEW_TRIP", trip, (tripAccepted) => {
-            if (tripAccepted) {
-              setDriverOnATrip(currentDriver.DriverID, trip.TripID);
-              const userConnection = connectedUsers[trip.UserID];
-              const tripAppData = {
-                id: trip.TripID,
-                startStreetName: trip.StartStreetName,
-                finalStreetName: trip.FinalStreetName,
-                startLocation: {
-                  latitude: trip.StartLocationLatitude,
-                  longitude: trip.FinalLocationLongitude,
-                },
-                finalLocation: {
-                  latitude: trip.FinalLocationLatitude,
-                  longitude: trip.FinalLocationLongitude,
-                },
-              };
-              const tripFinalData = {
-                trip: tripAppData,
-                driver: {
-                  driverid: currentDriver.DriverID,
-                  latitude: currentDriver.CurrentLocationLatitude,
-                  longitude: currentDriver.CurrentLocationLongitude,
-                  nombre: currentDriver.Name,
-                  modeloAuto: currentDriver.ModeloAuto,
-                  matricula: currentDriver.Matricula,
-                },
-              };
-              io.to(userConnection.socketid).emit("DRIVER_FOUND", tripFinalData);
-              return;
-            } else {
-              exceptionIDs.push(currentDriver.DriverID);
-              notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);
-            }
+          if (tripAccepted) {
+            setDriverOnATrip(currentDriver.DriverID, trip.TripID);
+            const userConnection = connectedUsers[trip.UserID];
+            const tripAppData = {
+              id: trip.TripID,
+              startStreetName: trip.StartStreetName,
+              finalStreetName: trip.FinalStreetName,
+              startLocation: {
+                latitude: trip.StartLocationLatitude,
+                longitude: trip.FinalLocationLongitude,
+              },
+              finalLocation: {
+                latitude: trip.FinalLocationLatitude,
+                longitude: trip.FinalLocationLongitude,
+              },
+            };
+            const tripFinalData = {
+              trip: tripAppData,
+              driver: {
+                driverid: currentDriver.DriverID,
+                latitude: currentDriver.CurrentLocationLatitude,
+                longitude: currentDriver.CurrentLocationLongitude,
+                nombre: currentDriver.Name,
+                modeloAuto: currentDriver.ModeloAuto,
+                matricula: currentDriver.Matricula,
+              },
+            };
+            io.to(userConnection.socketid).emit("DRIVER_FOUND", tripFinalData);
+            return;
+          } else {
+            exceptionIDs.push(currentDriver.DriverID);
+            notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);
           }
-        );
+        });
       } else {
         exceptionIDs.push(currentDriver.DriverID);
         notifyDriversAboutNewTrip(newDriverList, trip, exceptionIDs);
