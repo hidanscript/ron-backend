@@ -14,6 +14,8 @@ const createDriver = async (driverData, username, password) => {
     dniFrontImageUrl: driverData.dniFrontImage,
     dniBackImageUrl: driverData.dniBackImage,
     licenseUrl: driverData.licenseUrl,
+    licenseGreenFrontUrl: driverData.licenciaVerdeDorso,
+    licenseGreenBackUrl: driverData.licenciaVerdeTrasera,
     cellphone: parseInt(driverData.cellphone),
     password: encryptedPassword,
   };
