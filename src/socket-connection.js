@@ -13,7 +13,6 @@ const {
 const { getDistance } = require("./lib/functions");
 const User = require("./models/user");
 
-const BreakException = {};
 let connectedUsers = {};
 let connectedDrivers = {};
 
@@ -22,6 +21,7 @@ function init(server) {
   io.on("connection", (socket) => {
     socket.on("USER_CONNECTED", (user) => {
       user.socketid = socket.id;
+      user.socket = socket;
       connectedUsers = addConnection(connectedUsers, user);
       socket.user = user;
       console.log(connectedUsers);
@@ -29,8 +29,14 @@ function init(server) {
 
     socket.on("DRIVER_CONNECTED", (driver) => {
       driver.socketid = socket.id;
+      driver.socket = socket;
       connectedDrivers = addConnection(connectedDrivers, driver);
       socket.driver = driver;
+      driver.socket.emit("NEW_TRIP", {
+
+      }, (test) => {
+          console.log(test);
+      })
       console.log(connectedDrivers);
     });
 
@@ -140,11 +146,7 @@ function init(server) {
       io.to(userConnection.socketid).emit("NOT_DRIVERS_AVAILABLE");
     }
 
-    function notifyDriversAboutNewTrip(
-      driverlist = [],
-      trip,
-      exceptionIDs = []
-    ) {
+    function notifyDriversAboutNewTrip(driverlist = [], trip, exceptionIDs = []) {
       let currentDriver;
       let newDriverList = [];
       if (driverlist.length) {
@@ -170,10 +172,7 @@ function init(server) {
 
       if (isConnected(connectedDrivers, currentDriver.DriverID)) {
         const driverConnection = connectedDrivers[currentDriver.DriverID];
-        io.to(driverConnection.socketid).emit(
-          "NEW_TRIP",
-          trip,
-          (tripAccepted) => {
+        driverConnection.socket.emit("NEW_TRIP", trip, (tripAccepted) => {
             if (tripAccepted) {
               setDriverOnATrip(currentDriver.DriverID, trip.TripID);
               const userConnection = connectedUsers[trip.UserID];
@@ -201,10 +200,7 @@ function init(server) {
                   matricula: currentDriver.Matricula,
                 },
               };
-              io.to(userConnection.socketid).emit(
-                "DRIVER_FOUND",
-                tripFinalData
-              );
+              io.to(userConnection.socketid).emit("DRIVER_FOUND", tripFinalData);
               return;
             } else {
               exceptionIDs.push(currentDriver.DriverID);
